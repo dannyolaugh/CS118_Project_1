@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <sstream>
+#include "header.hpp"
 
 int main(int argc, char* argv[])
 {

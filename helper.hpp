@@ -5,11 +5,11 @@ class HttpRequest
 public:
   void setMethod(string m);
   string getMethod();
-  void setVersion(string m);
+  void setVersion(string v);
   string getVersion();
-  void setPort(string m);
+  void setPort(string p);
   string getPort();
-  void setPath(string m);
+  void setPath(string p);
   string getPath();
   void setMessage(string m);
   string getMessage();
@@ -27,11 +27,11 @@ private:
 class HttpResponse
 {
 public:
-  void setVersion(string m);
+  void setVersion(string v);
   string getVersion();
-  void setStatus(string m);
+  void setStatus(string s);
   string getStatus();
-  void setBody(string m);
+  void setBody(string b);
   string getBody();
   void setMessage(string m);
   string getMessage();

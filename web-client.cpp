@@ -9,9 +9,9 @@
 
 #include <iostream>
 #include <sstream>
+#include "header.hpp"
 
-int
-main()
+int main(int argc, char* argv[])
 {
   // create a socket using TCP IP
   int sockfd = socket(AF_INET, SOCK_STREAM, 0);
