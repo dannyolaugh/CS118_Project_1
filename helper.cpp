@@ -1,5 +1,18 @@
 #include "helper.hpp"
 
+HttpRequest::HttpRequest(string url)
+{
+  url.erase(0,7);
+  for(int i = 0; i < url.length(); i++)
+    {
+      if(url[i] == "/")
+	{
+
+	}
+    }
+}
+
+
 void HttpRequest::setMethod(string m)
 {
   method = m;
@@ -40,14 +53,20 @@ string HttpRequest::getPort();
   return port;
 }
 
-void HttpRequest::setEncodedMessage()
+string HttpRequest::setHost(string h)
+{
+  host = h;
+}
+
+string HttpRequest::getHost()
+{
+  return host;
+}
+
+void HttpRequest::encode()
 {
   message = method + " " + path + " " + version + "\r\n" 
     + "Host: " + host + ":" + port + "\r\n\r\n";
-}
-
-string HttpRequest::getEncodedMessage();
-{
   return message;
 }
 
@@ -69,19 +88,23 @@ int HttpRequest::decode(string message)
 	  count++;
 	  pos = i;
 	}
-      else if (message[i] == "\\" && count ==2))
+      else if (message[i] == "\r" && count ==2)
 	{
-	  version = message.substing;
+	  version = message.substring(pos, i);
 	  pos = i;
+	  count++;
 	}
-      else if ()
+      else if (message[i] == ":" && count == 3)
 	{
-	  
+	  host = message.substing(pos,i);
 	  pos = i;
+	  count++;
 	}
-      else if ()
+      else if (message[i] == ":" && count == 4)
 	{
-
+	  port = message.substring(pos,i);
+	  pos = i;
+          count++;
 	}
     }
 }
@@ -121,13 +144,10 @@ string HttpResponse::getBody();
   return body;
 }
 
-void HttpResponse::setEncodedMessage()
+string HttpResponse::encode();
 {
-  //to do: formulate message                                                             
-}
+  message = 
 
-string HttpResponse::getEncodedMessage();
-{
   return message;
 }
 
