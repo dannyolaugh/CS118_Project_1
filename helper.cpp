@@ -53,7 +53,37 @@ string HttpRequest::getEncodedMessage();
 
 int HttpRequest::decode(string message)
 {
+  int count = 0;
+  int pos = 0;
+  for(int i = 0; i < message.length(); i++)
+    {
+      if(message[i] == " " && count == 0)
+	{
+	  method = message.substring(0,i);
+	  count++;
+	  pos = i;
+	}
+      else if(message[i] == " " && count == 1)
+	{
+	  path = message.substring();
+	  count++;
+	  pos = i;
+	}
+      else if (message[i] == "\\" && count ==2))
+	{
+	  version = message.substing;
+	  pos = i;
+	}
+      else if ()
+	{
+	  
+	  pos = i;
+	}
+      else if ()
+	{
 
+	}
+    }
 }
 
 /*////////////////////////////////*/
