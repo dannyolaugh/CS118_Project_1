@@ -9,19 +9,20 @@
 
 #include <iostream>
 #include <sstream>
-#include "header.hpp"
+#include "helper.hpp"
+using namespace std;
 
 int main(int argc, char* argv[])
 {
-  char* hostname;
-  char* portNum;
-  char* dir;
-  char* ipstr[INET_ADDRSTRLEN] = {'\0'};
+  string hostname;
+  string portNum;
+  string dir;
+  string ipstr;
 
   if(argc == 2 || argc == 3 || argc > 4)
     {
       std::cerr << "Invalid Argument Number" <<endl;
-      return 0
+      return 0;
     }
   else if( argc == 1)
     {
@@ -34,34 +35,50 @@ int main(int argc, char* argv[])
       hostname = argv[1];
       portNum = argv[2];
       dir = argv[3];
-      
-      struct addrinfo hints;
-      struct addrinfo* res;
-      
-      // prepare hints
-      memset(&hints, 0, sizeof(hints));
-      hints.ai_family = AF_INET; // IPv4
-      hints.ai_socktype = SOCK_STREAM; // TCP
-      
-      // get address
-      int status = 0;
-      if ((status = getaddrinfo(hostname, portNum, &hints, &res)) != 0) {
-	std::cerr << "getaddrinfo: " << gai_strerror(status) << std::endl;
-	return 2;
-      }
-      
-      for(struct addrinfo* p = res; p != 0; p = p->ai_next) {
-	// convert address to IPv4 address
-	struct sockaddr_in* ipv4 = (struct sockaddr_in*)p->ai_addr;
-	
-	// convert the IP to a string and print it:
-	inet_ntop(p->ai_family, &(ipv4->sin_addr), ipstr, sizeof(ipstr));  
-      }
-      free addrinfo(res); // free the linked list
-      
+
+      ipstr = getIP(hostname, portNum);
     }
+
+
+  ifstream file;
+  request.getPath();
+  string fileName;
+  if (dir != ".") {
+    filename = dir + request.getPath();
+    cout << "filename: " << filename << endl;
+  }
+
+  inStream.open(filename,ios::binary);
+
   
-  
+  // 404 file not found
+  if (inStream.fail())
+    {
+      cout << "Requested File Not Found" << endl;
+      response.setStatus("404 NOT FOUND");
+      response.setBodySize(0);
+      response.encode();
+    }
+  else
+    {
+      // file successfully found
+      response.setStatus("200 OK");
+      string tmp; 
+      unsigned char i;
+
+      while(1) {
+	inStream.read((char *)&i, sizeof(i));
+	if(inStream.eof()) 
+	  break;
+	tmp+=i;
+      }
+
+
+      response.setBody(tmp);  
+      response.setBodySize(tmp.size());
+
+      response.encode();
+    }
   
   // create a socket using TCP IP
   int sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -77,7 +94,7 @@ int main(int argc, char* argv[])
   struct sockaddr_in addr;
   addr.sin_family = AF_INET;
   addr.sin_port = htons(40000);     // short, network byte order
-  addr.sin_addr.s_addr = inet_addr(ipstr);
+  addr.sin_addr.s_addr = inet_addr(ipstr.c_str());
   memset(addr.sin_zero, '\0', sizeof(addr.sin_zero));
 
   if (bind(sockfd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
@@ -102,9 +119,9 @@ int main(int argc, char* argv[])
   }
 
   // read/write data from/into the connection
-  bool isEnd = false;
-  string buf;
-
+  //  bool isEnd = false;
+  //string buf;
+  /*
   while (!isEnd) {
     
     if (read(clientSockfd, buf, sizeof[buf]) == -1) {
@@ -125,7 +142,7 @@ int main(int argc, char* argv[])
 
     ss.str("");
   }
-
+  */
   close(clientSockfd);
 
   return 0;

@@ -57,7 +57,7 @@ void HttpRequest::setPath(string p)
   path = p;
 }
 
-string HttpResquest::getMethod();
+string HttpResquest::getPath();
 {
   return p;
 }
@@ -121,7 +121,7 @@ string HttpRequest::decode(string message)
 /*////////////////////////////////*/
 
 
-HttpRequest::HttpRequest(string s, string b)
+HttpResponse::HttpResponse(string s, string b)
 {
   version = "HTTP/1.0";
   status = s;
@@ -211,8 +211,8 @@ string HttpResponse::decode(string message)
 	  conLen = false;
 	  bodySize = message.substring(pos, i);
 	}
-      
     }
+  body = message.substring(message.length()-bodySize-4, message.length()-4);
 }
 
 
