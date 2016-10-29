@@ -2,12 +2,26 @@
 
 HttpRequest::HttpRequest(string url)
 {
-  url.erase(0,7);
-  for(int i = 0; i < url.length(); i++)
-    {
-      if(url[i] == "/")
-	{
+  method = "GET";
+  version = "HTTP/1.0";
 
+  int count = 0;
+  boolean port = false;
+  for(int i = 7; i < url.length(); i++)
+    {
+      if(url[i] == ":")
+	{
+	  host = url.substring.(7,i);
+	  port = true;
+	}
+      else if(url[i] == ":" && count == 1)
+        {
+          count++;
+        }
+      else if(url[i] == "/" && !port)
+	{
+	  path = url.substring(i, url.length-1);
+	  break;
 	}
     }
 }
@@ -70,7 +84,7 @@ void HttpRequest::encode()
   return message;
 }
 
-int HttpRequest::decode(string message)
+string HttpRequest::decode(string message)
 {
   int count = 0;
   int pos = 0;
@@ -94,24 +108,22 @@ int HttpRequest::decode(string message)
 	  pos = i;
 	  count++;
 	}
-      else if (message[i] == ":" && count == 3)
-	{
-	  host = message.substing(pos,i);
-	  pos = i;
-	  count++;
-	}
-      else if (message[i] == ":" && count == 4)
-	{
-	  port = message.substring(pos,i);
-	  pos = i;
-          count++;
-	}
     }
 }
 
 /*////////////////////////////////*/
 /*///////////BREAK////////////////*/
 /*////////////////////////////////*/
+
+
+HttpRequest::HttpRequest(string s, string b)
+{
+  version = "HTTP/1.0";
+  status = s;
+  body = b;
+  bodySize = body.size();
+  message = "";
+}
 
 
 void HttpResponse::setVersion(string v)
@@ -144,18 +156,51 @@ string HttpResponse::getBody();
   return body;
 }
 
+void HttpResponse::setBodySize(int b)
+{
+  bodySize = b;
+}
+
+string HttpResponse::getBodySize();
+{
+  return bodySize;
+}
+
+
 string HttpResponse::encode();
 {
-  message = 
+  message = version + " " + status + "\r\n" + "Content-Length: " 
+    + to_string(bodySize) + "\r\n\r\n" + body;
 
   return message;
 }
 
-int HttpResponse::decode(string message)
+string HttpResponse::decode(string message)
 {
-  
+  int count = 0;
+  int pos = 0;
+  for(int i = 0; i < message.length(); i++)
+    {
+      if(message[i] == " " && count == 0)
+        {
+          method = message.substring(0,i);
+          count++;
+          pos = i;
+        }
+      else if(message[i] == " " && count == 1)
+        {
+          path = message.substring();
+          count++;
+          pos = i;
+        }
+      else if (message[i] == "\r" && count ==2)
+        {
+          version = message.substring(pos, i);
+          pos = i;
+          count++;
+        }
+    }
 }
-
 
 
 string getIP(string hostname, string portNum)
@@ -174,14 +219,16 @@ string getIP(string hostname, string portNum)
     std::cerr << "getaddrinfo: " << gai_strerror(status) << std::endl;
     return 2;
   }
-
+  string ip = ""
   for(struct addrinfo* p = res; p != 0; p = p->ai_next) {
     // convert address to IPv4 address                                      
     struct sockaddr_in* ipv4 = (struct sockaddr_in*)p->ai_addr;
 
     // convert the IP to a string and print it:                             
+    char ipstr[INET_ADDRSTRLEN] = {'\0'};
     inet_ntop(p->ai_family, &(ipv4->sin_addr), ipstr, sizeof(ipstr));
+    ip = ipstr;
   }
   free addrinfo(res); // free the linked list     
-  return ipstr;
+  return ip;
 }

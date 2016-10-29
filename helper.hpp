@@ -17,8 +17,8 @@ public:
   string getHost();
   void setMessage(string m);
   string getMessage();
-  int encode();
-  int decode(string message);
+  string encode();
+  string decode(string message);
 
 private:
   string method;
@@ -32,21 +32,25 @@ private:
 class HttpResponse
 {
 public:
-  
+  HttpResponse(string s, string b);
+
   void setVersion(string v);
   string getVersion();
   void setStatus(string s);
   string getStatus();
   void setBody(string b);
   string getBody();
+  void setBodySize(int b);
+  int getBodySize();
   void setMessage(string m);
   string getMessage();
-  int encode();
-  int decode(string message);
+  string encode();
+  string decode(string message);
 
 private:
   string version;
   string status;
   string body;
   string message;
+  int bodySize;
 };
