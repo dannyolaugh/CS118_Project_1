@@ -40,19 +40,15 @@ string HttpRequest::getPort();
   return port;
 }
 
-void HttpRequest::setMessage(string m)
+void HttpRequest::setEncodedMessage()
 {
-  //to do: formulate message
+  message = method + " " + path + " " + version + "\r\n" 
+    + "Host: " + host + ":" + port + "\r\n\r\n";
 }
 
-string HttpRequest::getMessage();
+string HttpRequest::getEncodedMessage();
 {
   return message;
-}
-
-int HttpRequest::encode()
-{
-
 }
 
 int HttpRequest::decode(string message)
@@ -60,61 +56,55 @@ int HttpRequest::decode(string message)
 
 }
 
-class HttpResponse
+/*////////////////////////////////*/
+/*///////////BREAK////////////////*/
+/*////////////////////////////////*/
+
+
+void HttpResponse::setVersion(string v)
 {
+  version = v;
+}
 
-  void HttpResponse::setVersion(string v)
-  {
-    version = v;
-  }
+string HttpResponse::getVersion();
+{
+  return version;
+}
 
-  string HttpResponse::getVersion();
-  {
-    return version;
-  }
+void HttpResponse::setStatus(string s)
+{
+  status = s;
+}
 
-  void setStatus(string s);
-  string getStatus();
+string HttpResponse::getStatus();
+{
+  return status;
+}
 
-  void HttpResponse::setStatus(string s)
-  {
-    status = s;
-  }
+void HttpResponse::setBody(string b)
+{
+  body = b;
+}
 
-  string HttpResponse::getStatus();
-  {
-    return status;
-  }
+string HttpResponse::getBody();
+{
+  return body;
+}
 
-  void HttpResponse::setBody(string b)
-  {
-    body = b;
-  }
+void HttpResponse::setEncodedMessage()
+{
+  //to do: formulate message                                                             
+}
 
-  string HttpResponse::getBody();
-  {
-    return body;
-  }
+string HttpResponse::getEncodedMessage();
+{
+  return message;
+}
 
-  void HttpResponse::setMessage(string m)
-  {
-    //to do: formulate message                                                             
-  }
-
-  string HttpResponse::getMessage();
-  {
-    return message;
-  }
-
-  int HttpResponse::encode()
-  {
-
-  }
-
-  int HttpResponse::decode(string message)
-  {
-
-  }
+int HttpResponse::decode(string message)
+{
+  
+}
 
 
 
