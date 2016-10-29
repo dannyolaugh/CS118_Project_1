@@ -4,22 +4,27 @@ HttpRequest::HttpRequest(string url)
 {
   method = "GET";
   version = "HTTP/1.0";
+  port = "80";
 
   int count = 0;
-  boolean port = false;
+  boolean portDef = false;
   for(int i = 7; i < url.length(); i++)
     {
       if(url[i] == ":")
 	{
 	  host = url.substring.(7,i);
+	  pos = i;
 	  port = true;
 	}
-      else if(url[i] == ":" && count == 1)
+      else if(url[i] == "/" && portDef)
         {
-          count++;
+	  port = url.substring(pos, i);
+	  path = url.substring(i, url.length-1);
+	  break;
         }
-      else if(url[i] == "/" && !port)
+      else if(url[i] == "/" && !portDef)
 	{
+	  host = url.substring(7,i);
 	  path = url.substring(i, url.length-1);
 	  break;
 	}
@@ -177,28 +182,36 @@ string HttpResponse::encode();
 
 string HttpResponse::decode(string message)
 {
-  int count = 0;
+  boolean statusFound = false;
+  boolean conLen = false;
   int pos = 0;
   for(int i = 0; i < message.length(); i++)
     {
-      if(message[i] == " " && count == 0)
+      if(message[i] == " ")
         {
-          method = message.substring(0,i);
-          count++;
+          version = message.substring(0,i);
           pos = i;
         }
-      else if(message[i] == " " && count == 1)
+      else if (message[i] == "\r" && !statusFound)
         {
-          path = message.substring();
-          count++;
+          status = message.substring(pos, i);
           pos = i;
-        }
-      else if (message[i] == "\r" && count ==2)
-        {
-          version = message.substring(pos, i);
-          pos = i;
-          count++;
-        }
+	  statusFound = true;
+	}
+      else if(message[i] == ":")
+	{
+	  if(message.substring(i-14,i) == "Content-Length")
+	    {
+	      pos = i+1;
+	      conLen = true;
+	    }
+	}
+      else if(message[i] == "\r" && conLen && statusFound)
+	{
+	  conLen = false;
+	  bodySize = message.substring(pos, i);
+	}
+      
     }
 }
 
