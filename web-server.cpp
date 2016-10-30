@@ -7,9 +7,10 @@
 #include <errno.h>
 #include <unistd.h>
 
+#include <string>
 #include <iostream>
 #include <sstream>
-#include "helper.hpp"
+#include "helper.h"
 using namespace std;
 
 int main(int argc, char* argv[])
@@ -36,10 +37,10 @@ int main(int argc, char* argv[])
       portNum = argv[2];
       dir = argv[3];
 
-      ipstr = getIP(hostname, portNum);
+      //      ipstr = getIP(hostname, portNum);
     }
 
-
+  /*
   ifstream file;
   request.getPath();
   string fileName;
@@ -79,7 +80,7 @@ int main(int argc, char* argv[])
 
       response.encode();
     }
-  
+  */
   // create a socket using TCP IP
   int sockfd = socket(AF_INET, SOCK_STREAM, 0);
   

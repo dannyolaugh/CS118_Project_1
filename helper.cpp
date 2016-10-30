@@ -1,34 +1,40 @@
-#include "helper.hpp"
-
+#include "helper.h"
+#include <string>
 HttpRequest::HttpRequest(string url)
 {
   method = "GET";
   version = "HTTP/1.0";
   port = "80";
 
-  int count = 0;
-  boolean portDef = false;
+  int pos = 0;
+  bool portDef = false;
+  bool fileNameFind = false;
   for(int i = 7; i < url.length(); i++)
     {
-      if(url[i] == ":")
+      if(strcmp(url[i],":"))
 	{
-	  host = url.substring.(7,i);
+	  host = url.substr(7,i);
 	  pos = i;
 	  port = true;
 	}
-      else if(url[i] == "/" && portDef)
+      else if(url[i] == "/" && portDef && !fileNameFind)
         {
-	  port = url.substring(pos, i);
-	  path = url.substring(i, url.length-1);
-	  break;
+	  port = url.substr(pos, i);
+	  path = url.substr(i, url.length()-1);
+	  fileNameFind = true;
         }
-      else if(url[i] == "/" && !portDef)
+      else if(url[i] == "/" && !portDef && !fileNameFind)
 	{
-	  host = url.substring(7,i);
-	  path = url.substring(i, url.length-1);
-	  break;
+	  host = url.substr(7,i);
+	  path = url.substr(i, url.length()-1);
+	  fileNameFind = true;
+	}
+      if(url[i] == "/")
+	{
+	  pos = i;
 	}
     }
+  fileName = url.substr(i, url.length()-1);
 }
 
 
@@ -82,6 +88,16 @@ string HttpRequest::getHost()
   return host;
 }
 
+string HttpRequest::setHost(string f)
+{
+  fileName = f;
+}
+
+string HttpRequest::getFileName()
+{
+  return fileName;
+}
+
 void HttpRequest::encode()
 {
   message = method + " " + path + " " + version + "\r\n" 
@@ -89,7 +105,7 @@ void HttpRequest::encode()
   return message;
 }
 
-string HttpRequest::decode(string message)
+void HttpRequest::decode(string message)
 {
   int count = 0;
   int pos = 0;
@@ -97,19 +113,19 @@ string HttpRequest::decode(string message)
     {
       if(message[i] == " " && count == 0)
 	{
-	  method = message.substring(0,i);
+	  method = message.substr(0,i);
 	  count++;
 	  pos = i;
 	}
       else if(message[i] == " " && count == 1)
 	{
-	  path = message.substring();
+	  path = message.substr();
 	  count++;
 	  pos = i;
 	}
       else if (message[i] == "\r" && count ==2)
 	{
-	  version = message.substring(pos, i);
+	  version = message.substr(pos, i);
 	  pos = i;
 	  count++;
 	}
@@ -180,27 +196,27 @@ string HttpResponse::encode();
   return message;
 }
 
-string HttpResponse::decode(string message)
+void HttpResponse::decode(string message)
 {
-  boolean statusFound = false;
-  boolean conLen = false;
+  bool statusFound = false;
+  bool conLen = false;
   int pos = 0;
   for(int i = 0; i < message.length(); i++)
     {
       if(message[i] == " ")
         {
-          version = message.substring(0,i);
+          version = message.substr(0,i);
           pos = i;
         }
       else if (message[i] == "\r" && !statusFound)
         {
-          status = message.substring(pos, i);
+          status = message.substr(pos, i);
           pos = i;
 	  statusFound = true;
 	}
       else if(message[i] == ":")
 	{
-	  if(message.substring(i-14,i) == "Content-Length")
+	  if(message.substr(i-14,i) == "Content-Length")
 	    {
 	      pos = i+1;
 	      conLen = true;
@@ -209,10 +225,10 @@ string HttpResponse::decode(string message)
       else if(message[i] == "\r" && conLen && statusFound)
 	{
 	  conLen = false;
-	  bodySize = message.substring(pos, i);
+	  bodySize = message.substr(pos, i);
 	}
     }
-  body = message.substring(message.length()-bodySize-4, message.length()-4);
+  body = message.substr(message.length()-bodySize-4, message.length()-4);
 }
 
 
@@ -230,7 +246,6 @@ string getIP(string hostname, string portNum)
   int status = 0;
   if ((status = getaddrinfo(hostname, portNum, &hints, &res)) != 0) {
     std::cerr << "getaddrinfo: " << gai_strerror(status) << std::endl;
-    return 2;
   }
   string ip = ""
   for(struct addrinfo* p = res; p != 0; p = p->ai_next) {

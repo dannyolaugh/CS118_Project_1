@@ -31,7 +31,7 @@ public:
   void setFileName(string f);
   string getFileName();
   string encode();
-  string decode(string message);
+  void decode(string message);
 
 private:
   string method;
@@ -59,7 +59,7 @@ public:
   void setMessage(string m);
   string getMessage();
   string encode();
-  string decode(string message);
+  void decode(string message);
 
 private:
   string version;
