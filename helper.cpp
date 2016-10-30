@@ -1,4 +1,14 @@
-/*
+#include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+
+#include <string>
+#include <iostream>
+
 #include "helper.h"
 
 void HttpRequest::parseUrl(string url)
@@ -10,7 +20,7 @@ void HttpRequest::parseUrl(string url)
   int pos = 0;
   bool portDef = false;
   bool fileNameFind = false;
-  for(int i = 7; i < url.length(); i++)
+  for(unsigned int i = 7; i < url.length(); i++)
     {
       if(url[i] == ':')
 	{
@@ -110,7 +120,7 @@ void HttpRequest::decode(string message)
 {
   int count = 0;
   int pos = 0;
-  for(int i = 0; i < message.length(); i++)
+  for(unsigned int i = 0; i < message.length(); i++)
     {
       if(message[i] == ' ' && count == 0)
 	{
@@ -132,11 +142,11 @@ void HttpRequest::decode(string message)
 	}
     }
 }
-*/
+
 /*////////////////////////////////*/
 /*///////////BREAK////////////////*/
 /*////////////////////////////////*/
-/*
+
 void HttpResponse::setResponse(string s, string b)
 {
   version = "HTTP/1.0";
@@ -188,7 +198,7 @@ int HttpResponse::getBodySize()
 }
 
 
-string HttpResponse::encode();
+string HttpResponse::encode()
 {
   message = version + " " + status + "\r\n" + "Content-Length: " 
     + to_string(bodySize) + "\r\n\r\n" + body;
@@ -201,7 +211,7 @@ void HttpResponse::decode(string message)
   bool statusFound = false;
   bool conLen = false;
   int pos = 0;
-  for(int i = 0; i < message.length(); i++)
+  for(unsigned int i = 0; i < message.length(); i++)
     {
       if(message[i] == ' ')
         {
@@ -244,7 +254,7 @@ string getIP(string hostname, string portNum)
 
   // get address                                                            
   int status = 0;
-  if ((status = getaddrinfo(hostname, portNum, &hints, &res)) != 0) {
+  if ((status = getaddrinfo(hostname.c_str(), portNum.c_str(), &hints, &res)) != 0) {
     std::cerr << "getaddrinfo: " << gai_strerror(status) << std::endl;
   }
 
@@ -258,7 +268,7 @@ string getIP(string hostname, string portNum)
     inet_ntop(p->ai_family, &(ipv4->sin_addr), ipstr, sizeof(ipstr));
     ip = ipstr;
   }
-  free addrinfo(res); // free the linked list     
+  freeaddrinfo(res); // free the linked list     
   return ip;
 }
-*/
+
