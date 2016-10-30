@@ -88,95 +88,96 @@ int main(int argc, char *argv[])
       
       thread(resolveRequest, clientAddr, clientSockfd); //every time a connection is made, that connection will get its own thread
     }
-  
-  resolveRequest(clientAddr, clientSockfd)
-    {
-      bool isEnd = false;
-      char buf[20] = {0};
-      stringstream ss;
-      
-      int timeout = 10;
-      int timer = 0;
-      HttpRequest message_content = "";
-      
-      while (!isEnd)
-	{
-	  memset(buf, '\0', sizeof(buf));
-	  while (recv(clientSockfd, buf, 20, 0) == -1)
-	    {
-	      timer++;
-	      if(timer >= timeout)
-		{
-		  close(clientSockfd); //close connection
-		}
-	    }
-	  
-	  ss << buf << endl;
-	  
-	  bool has_complete_message = false;
-	  while(!has_complete_message)
-	    {
-	      string content = ss.str();
-	      if(content.find("\r\n\r\n") == string::npos)  //means you didnt find this sequence so keep polling cause we dont have all data
-		{
-		  continue;    //keep polling
-		}
-	      else   //we did find the complete string
-		{
-		  message_content = content;
-		  has_complete_message = true;
-		}
-	    }
-	  ss.str("");
-	}
-      
-      message_content.decode();
+}
 
-      if(message_content.getMethod != "GET")
+resolveRequest(clientAddr, clientSockfd)
+{
+  bool isEnd = false;
+  char buf[20] = {0};
+  stringstream ss;
+  
+  int timeout = 10;
+  int timer = 0;
+  HttpRequest message_content = "";
+  
+  while (!isEnd)
+    {
+      memset(buf, '\0', sizeof(buf));
+      while (recv(clientSockfd, buf, 20, 0) == -1)
 	{
-	  message_content.setStatus("400 BAD REQUEST");
+	  timer++;
+	  if(timer >= timeout)
+	    {
+	      close(clientSockfd); //close connection
+	    }
 	}
       
-      ifstream myReadFile;
-      message_content.getPath();
-      string fileName;
+      ss << buf << endl;
       
-      if (dir == ".")
+      bool has_complete_message = false;
+      while(!has_complete_message)
 	{
-	  fileName = message_content.getPath();
+	  string content = ss.str();
+	  if(content.find("\r\n\r\n") == string::npos)  //means you didnt find this sequence so keep polling cause we dont have all data
+	    {
+	      continue;    //keep polling
+	    }
+	  else   //we did find the complete string
+	    {
+	      message_content = content;
+	      has_complete_message = true;
+	    }
 	}
-      else
-	{
-	  fileName = dir + message_content.getPath();
-	}
-      
-      HttpResponse response;
-      myReadFile.open(filename,ios::binary);
-      if (myReadFile.fail())
-	{
-	  response.setStatus("404 NOT FOUND");
-	  response.setBodySize(0);
-	}
-      else
-	{
-	  // file successfully found
-	  response.setStatus("200 OK");
-	  string tmp;
-	  myReadFile >> tmp;
-	  response.setBody(tmp);
-	  response.setBodySize(tmp.size());
-	}
-      
-      response.setResponse(response.getStatus(),response.getBody());
-      string briansResponse = response.encode();
-      
-      if (write(clientSockfd, briansResponse.c_str(), briansResponse.size()) == -1)
-	{
-	  perror("write");
-	  return 4;
-	}
-      //get the response back from jack
-      //send the response to the client
-      close(clientSockfd);
-      return 0;
+      ss.str("");
     }
+  
+  message_content.decode();
+  
+  if(message_content.getMethod != "GET")
+    {
+      message_content.setStatus("400 BAD REQUEST");
+    }
+  
+  ifstream myReadFile;
+  message_content.getPath();
+  string fileName;
+  
+  if (dir == ".")
+    {
+      fileName = message_content.getPath();
+    }
+  else
+    {
+      fileName = dir + message_content.getPath();
+    }
+  
+  HttpResponse response;
+  myReadFile.open(filename,ios::binary);
+  if (myReadFile.fail())
+    {
+      response.setStatus("404 NOT FOUND");
+      response.setBodySize(0);
+    }
+  else
+    {
+      // file successfully found
+      response.setStatus("200 OK");
+      string tmp;
+      myReadFile >> tmp;
+      response.setBody(tmp);
+      response.setBodySize(tmp.size());
+    }
+  
+  response.setResponse(response.getStatus(),response.getBody());
+  string briansResponse = response.encode();
+  
+  if (write(clientSockfd, briansResponse.c_str(), briansResponse.size()) == -1)
+    {
+      perror("write");
+      return 4;
+    }
+  //get the response back from jack
+  //send the response to the client
+  close(clientSockfd);
+  return 0;
+}
