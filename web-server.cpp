@@ -10,7 +10,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
-#include "helper.hpp"
+#include "helper.h"
 using namespace std;
 
 int main(int argc, char* argv[])

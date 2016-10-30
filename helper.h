@@ -1,3 +1,5 @@
+#ifndef HELPER_H
+#define HELPER_H
 
 #include <stdio.h>
 #include <string.h>
@@ -8,6 +10,7 @@
 #include <netinet/in.h>
 
 #include <string>
+#include <string.h>
 #include <iostream>
 using namespace std;
 
@@ -15,6 +18,7 @@ class HttpRequest
 {
 public:
   HttpRequest(string url);
+  HttpRequest();
   
   void setMethod(string m);
   string getMethod();
@@ -47,7 +51,8 @@ class HttpResponse
 {
 public:
   HttpResponse(string s, string b);
-
+  HttpResponse();
+  
   void setVersion(string v);
   string getVersion();
   void setStatus(string s);
@@ -71,3 +76,5 @@ private:
 
 
 string getIP(string hostname, string portNum);
+
+#endif

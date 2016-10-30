@@ -1,14 +1,15 @@
-#include "helper.hpp"
+
+#include "helper.h"
 
 HttpRequest::HttpRequest()
 {
-  string method = "";
-  string version = "";
-  string port = "";
-  string path = "";
-  string message = "";
-  string host = "";
-  string fileName = "";
+  method = "";
+  version = "";
+  port = "";
+  path = "";
+  message = "";
+  host = "";
+  fileName = "";
 }
 
 HttpRequest::HttpRequest(string url)
@@ -99,7 +100,7 @@ string HttpRequest::getHost()
   return host;
 }
 
-string HttpRequest::setHost(string f)
+void HttpRequest::setFileName(string f)
 {
   fileName = f;
 }
@@ -109,7 +110,7 @@ string HttpRequest::getFileName()
   return fileName;
 }
 
-void HttpRequest::encode()
+string HttpRequest::encode()
 {
   message = method + " " + path + " " + version + "\r\n" 
     + "Host: " + host + ":" + port + "\r\n\r\n";
@@ -122,19 +123,19 @@ void HttpRequest::decode(string message)
   int pos = 0;
   for(int i = 0; i < message.length(); i++)
     {
-      if(message[i] == " " && count == 0)
+      if(message[i] == ' ' && count == 0)
 	{
 	  method = message.substr(0,i);
 	  count++;
 	  pos = i;
 	}
-      else if(message[i] == " " && count == 1)
+      else if(message[i] == ' ' && count == 1)
 	{
 	  path = message.substr();
 	  count++;
 	  pos = i;
 	}
-      else if (message[i] == "\r" && count ==2)
+      else if (message[i] == '\r' && count ==2)
 	{
 	  version = message.substr(pos, i);
 	  pos = i;
@@ -171,7 +172,7 @@ void HttpResponse::setVersion(string v)
   version = v;
 }
 
-string HttpResponse::getVersion();
+string HttpResponse::getVersion()
 {
   return version;
 }
@@ -181,7 +182,7 @@ void HttpResponse::setStatus(string s)
   status = s;
 }
 
-string HttpResponse::getStatus();
+string HttpResponse::getStatus()
 {
   return status;
 }
@@ -191,7 +192,7 @@ void HttpResponse::setBody(string b)
   body = b;
 }
 
-string HttpResponse::getBody();
+string HttpResponse::getBody()
 {
   return body;
 }
@@ -201,7 +202,7 @@ void HttpResponse::setBodySize(int b)
   bodySize = b;
 }
 
-string HttpResponse::getBodySize();
+int HttpResponse::getBodySize()
 {
   return bodySize;
 }
@@ -222,18 +223,18 @@ void HttpResponse::decode(string message)
   int pos = 0;
   for(int i = 0; i < message.length(); i++)
     {
-      if(message[i] == " ")
+      if(message[i] == ' ')
         {
           version = message.substr(0,i);
           pos = i;
         }
-      else if (message[i] == "\r" && !statusFound)
+      else if (message[i] == '\r' && !statusFound)
         {
           status = message.substr(pos, i);
           pos = i;
 	  statusFound = true;
 	}
-      else if(message[i] == ":")
+      else if(message[i] == ':')
 	{
 	  if(message.substr(i-14,i) == "Content-Length")
 	    {
@@ -241,13 +242,13 @@ void HttpResponse::decode(string message)
 	      conLen = true;
 	    }
 	}
-      else if(message[i] == "\r" && conLen && statusFound)
+      else if(message[i] == '\r' && conLen && statusFound)
 	{
 	  conLen = false;
-	  bodySize = message.substr(pos, i);
+	  bodySize = message.substr(pos, i).size();
+	  body = message.substr(pos,i);
 	}
     }
-  body = message.substr(message.length()-bodySize-4, message.length()-4);
 }
 
 
@@ -266,7 +267,8 @@ string getIP(string hostname, string portNum)
   if ((status = getaddrinfo(hostname, portNum, &hints, &res)) != 0) {
     std::cerr << "getaddrinfo: " << gai_strerror(status) << std::endl;
   }
-  string ip = ""
+
+  string ip = "";
   for(struct addrinfo* p = res; p != 0; p = p->ai_next) {
     // convert address to IPv4 address                                      
     struct sockaddr_in* ipv4 = (struct sockaddr_in*)p->ai_addr;
