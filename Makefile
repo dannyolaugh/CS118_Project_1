@@ -6,10 +6,10 @@ CLASSES=
 
 all: web-server web-client
 
-web-server: $(CLASSES)
+web-client: $(CLASSES)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $@.cpp helper.cpp
 
-web-client: $(CLASSES)
+web-server: $(CLASSES)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $@.cpp helper.cpp
 
 clean:

@@ -210,17 +210,12 @@ string HttpResponse::encode()
 
 void HttpResponse::decode(string message)
 {
-  bool statusFound = false;
-  bool conLen = false;
-  int pos = 0;
   version = message.substr(0,8);
   int i = message.find("\r\n");
-  status = message.substr(0,i);
+  status = message.substr(9, i-9);
   message.erase(0,i+2);
   i = message.find("\r\n\r\n");
-  body = message.substr(i,i);
-
-  cout << body << endl;
+  body = message.substr(i,message.length()-i);
 }
 
 

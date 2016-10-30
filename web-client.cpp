@@ -89,8 +89,6 @@ int main(int argc, char *argv[])
 
       HttpResponse response;
       response.decode(recv_string);
-      //      cout << recv_string<< endl<< endl<< endl;
-      cout  << endl << response.getStatus() << endl;
 
       if (response.getStatus() == "404 NOT FOUND") {
 	cerr << "File requested not found.";

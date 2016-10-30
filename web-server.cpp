@@ -6,12 +6,17 @@
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
-#include "helper.hpp"
+#include <thread>
+#include "helper.h"
 
 #include <iostream>
 #include <sstream>
+#include <fstream>
 
 using namespace std;
+
+int resolveRequest(sockaddr_in  clientAddr, int clientSockfd);
+string dir;
 
 int main(int argc, char *argv[])
 {
@@ -19,7 +24,6 @@ int main(int argc, char *argv[])
   int sockfd = socket(AF_INET, SOCK_STREAM, 0);
   string host_name;
   unsigned short port_number;
-  string dir;
   
   if(argc == 2 || argc == 3 || argc > 4)
     {
@@ -35,13 +39,7 @@ int main(int argc, char *argv[])
     {
       host_name = argv[1];
       port_number = stoul(argv[2]);
-      dir = "." + argv[3];
-    }
-  
-  if((portNo > 65535) || (portNo < 2000))  //why cant less than 2000?
-    {
-      cerr << "Please enter a valid port number" << endl;
-      return 0;
+      dir = argv[3];
     }
   
   // allow others to reuse the address
@@ -55,9 +53,9 @@ int main(int argc, char *argv[])
   struct sockaddr_in addr;
   addr.sin_family = AF_INET;
   addr.sin_port = htons(port_number);     // short, network byte order
-  addr.sin_addr.s_addr = inet_addr(Url::showIP(hostname).c_str());
+  addr.sin_addr.s_addr = inet_addr(getIP(host_name, to_string(port_number)).c_str());
   memset(addr.sin_zero, '\0', sizeof(addr.sin_zero));
-  
+
   if (bind(sockfd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
     perror("bind");
     return 2;
@@ -65,41 +63,52 @@ int main(int argc, char *argv[])
   
   while(1)
     {
+      cout << "stuff" << endl;
+
       // set socket to listen status
       if (listen(sockfd, 1) == -1) {
 	perror("listen");
 	return 3;
       }
-      
+
+      cout << "stuff1" << endl;
+
       // accept a new connection
       struct sockaddr_in clientAddr;
       socklen_t clientAddrSize = sizeof(clientAddr);
+      cout << "stuff2" << endl;
       int clientSockfd = accept(sockfd, (struct sockaddr*)&clientAddr, &clientAddrSize);
-      
+
+      cout << clientSockfd  << endl;
+
       if (clientSockfd == -1) {
+	cout << "stuf3f" << endl;
+
 	perror("accept");
 	return 4;
       }
-      
+      cout << "stuf3f" << endl;
       char ipstr[INET_ADDRSTRLEN] = {'\0'};
       inet_ntop(clientAddr.sin_family, &clientAddr.sin_addr, ipstr, sizeof(ipstr));
       std::cout << "Accept a connection from: " << ipstr << ":" <<
 	ntohs(clientAddr.sin_port) << std::endl;
       
-      thread(resolveRequest, clientAddr, clientSockfd); //every time a connection is made, that connection will get its own thread
+      thread(resolveRequest, clientAddr, clientSockfd); 
+      //every time a connection is made, that connection will get its own thread
     }
 }
 
-resolveRequest(clientAddr, clientSockfd)
+int resolveRequest(sockaddr_in clientAddr, int clientSockfd)
 {
+  cout << "butts" <<endl;
   bool isEnd = false;
   char buf[20] = {0};
   stringstream ss;
   
   int timeout = 10;
   int timer = 0;
-  HttpRequest message_content = "";
-  
+  HttpRequest message_content;
+  string content;
   while (!isEnd)
     {
       memset(buf, '\0', sizeof(buf));
@@ -117,28 +126,37 @@ resolveRequest(clientAddr, clientSockfd)
       bool has_complete_message = false;
       while(!has_complete_message)
 	{
-	  string content = ss.str();
-	  if(content.find("\r\n\r\n") == string::npos)  //means you didnt find this sequence so keep polling cause we dont have all data
+	  content = ss.str();
+	  if(content.find("\r\n\r\n") == string::npos)
+	    //means you didnt find this sequence so keep polling cause we dont have all data
 	    {
 	      continue;    //keep polling
 	    }
 	  else   //we did find the complete string
 	    {
-	      message_content = content;
 	      has_complete_message = true;
 	    }
 	}
       ss.str("");
     }
   
-  message_content.decode();
-  
-  if(message_content.getMethod != "GET")
+  message_content.decode(content);
+  HttpResponse response;
+  if(message_content.getMethod() != "GET")
     {
-      message_content.setStatus("400 BAD REQUEST");
+      response.setStatus("400 BAD REQUEST");
+      string r = response.encode();
+
+      if (write(clientSockfd, r.c_str(), r.size()) == -1)
+	{
+	  perror("write");
+	  return 4;
+	}
+
+      close(clientSockfd);
     }
   
-  ifstream myReadFile;
+  fstream myReadFile;
   message_content.getPath();
   string fileName;
   
@@ -151,8 +169,8 @@ resolveRequest(clientAddr, clientSockfd)
       fileName = dir + message_content.getPath();
     }
   
-  HttpResponse response;
-  myReadFile.open(filename,ios::binary);
+
+  myReadFile.open(fileName,ios::binary);
   if (myReadFile.fail())
     {
       response.setStatus("404 NOT FOUND");
