@@ -132,13 +132,13 @@ void HttpRequest::decode(string message)
 	}
       else if(message[i] == ' ' && count == 1)
 	{
-	  path = message.substr(pos+1 , i);
+	  path = message.substr(pos+1, i-pos-1);
 	  count++;
 	  pos = i;
 	}
-      else if (message[i] == '\r' && count ==2)
+      else if (message[i] == '\r' && count == 2)
 	{
-	  version = message.substr(pos, i);
+	  version = message.substr(pos+1, i-pos);
 	  pos = i;
 	  count++;
 	}

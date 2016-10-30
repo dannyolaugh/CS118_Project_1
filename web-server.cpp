@@ -56,14 +56,14 @@ int main(int argc, char *argv[])
   addr.sin_addr.s_addr = inet_addr(getIP(host_name, to_string(port_number)).c_str());
   memset(addr.sin_zero, '\0', sizeof(addr.sin_zero));
 
-  if (bind(sockfd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+  if (::bind(sockfd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
     perror("bind");
     return 2;
   }
   
   while(1)
     {
-      cout << "stuff" << endl;
+
 
       // set socket to listen status
       if (listen(sockfd, 1) == -1) {
@@ -71,36 +71,32 @@ int main(int argc, char *argv[])
 	return 3;
       }
 
-      cout << "stuff1" << endl;
+
 
       // accept a new connection
       struct sockaddr_in clientAddr;
       socklen_t clientAddrSize = sizeof(clientAddr);
-      cout << "stuff2" << endl;
+
       int clientSockfd = accept(sockfd, (struct sockaddr*)&clientAddr, &clientAddrSize);
 
-      cout << clientSockfd  << endl;
-
       if (clientSockfd == -1) {
-	cout << "stuf3f" << endl;
-
 	perror("accept");
 	return 4;
       }
-      cout << "stuf3f" << endl;
+
       char ipstr[INET_ADDRSTRLEN] = {'\0'};
       inet_ntop(clientAddr.sin_family, &clientAddr.sin_addr, ipstr, sizeof(ipstr));
       std::cout << "Accept a connection from: " << ipstr << ":" <<
 	ntohs(clientAddr.sin_port) << std::endl;
-      
-      thread(resolveRequest, clientAddr, clientSockfd); 
+
+      thread(resolveRequest, clientAddr, clientSockfd).detach(); 
       //every time a connection is made, that connection will get its own thread
     }
 }
 
 int resolveRequest(sockaddr_in clientAddr, int clientSockfd)
 {
-  cout << "butts" <<endl;
+
   bool isEnd = false;
   char buf[20] = {0};
   stringstream ss;
@@ -109,37 +105,37 @@ int resolveRequest(sockaddr_in clientAddr, int clientSockfd)
   int timer = 0;
   HttpRequest message_content;
   string content;
+  string past;
   while (!isEnd)
     {
       memset(buf, '\0', sizeof(buf));
       while (recv(clientSockfd, buf, 20, 0) == -1)
 	{
 	  timer++;
+	  sleep(1);
 	  if(timer >= timeout)
 	    {
 	      close(clientSockfd); //close connection
 	    }
 	}
-      
+     
       ss << buf << endl;
+
+      string check = past + ss.str().substr(0,ss.str().size()-1);
+      content += ss.str().substr(0,ss.str().size()-1);
       
-      bool has_complete_message = false;
-      while(!has_complete_message)
+      if(check.find("\r\n\r\n") == string::npos)
 	{
-	  content = ss.str();
-	  if(content.find("\r\n\r\n") == string::npos)
-	    //means you didnt find this sequence so keep polling cause we dont have all data
-	    {
-	      continue;    //keep polling
-	    }
-	  else   //we did find the complete string
-	    {
-	      has_complete_message = true;
-	    }
+	  past = ss.str().substr(0,ss.str().size()-1);
+	  ss.str("");
+	  continue;   
 	}
-      ss.str("");
+      else   //we did find the complete string
+	{
+	  isEnd= true;
+	}
     }
-  
+
   message_content.decode(content);
   HttpResponse response;
   if(message_content.getMethod() != "GET")
@@ -155,22 +151,22 @@ int resolveRequest(sockaddr_in clientAddr, int clientSockfd)
 
       close(clientSockfd);
     }
-  
-  fstream myReadFile;
-  message_content.getPath();
+
+  ifstream myReadFile;
   string fileName;
   
-  if (dir == ".")
+  if(dir == ".")
     {
       fileName = message_content.getPath();
+      fileName.erase(0, fileName.find("/")+1);
     }
   else
     {
-      fileName = dir + message_content.getPath();
+      fileName = dir + "/" + fileName;
     }
-  
 
-  myReadFile.open(fileName,ios::binary);
+
+  myReadFile.open(fileName, ios::binary);
   if (myReadFile.fail())
     {
       response.setStatus("404 NOT FOUND");
@@ -181,14 +177,20 @@ int resolveRequest(sockaddr_in clientAddr, int clientSockfd)
       // file successfully found
       response.setStatus("200 OK");
       string tmp;
-      myReadFile >> tmp;
+      unsigned char i;
+
+      while(1) {
+	myReadFile.read((char *)&i, sizeof(i));
+	if(myReadFile.eof()) break;
+	tmp += i;
+      }
       response.setBody(tmp);
       response.setBodySize(tmp.size());
     }
   
   response.setResponse(response.getStatus(),response.getBody());
   string briansResponse = response.encode();
-  
+
   if (write(clientSockfd, briansResponse.c_str(), briansResponse.size()) == -1)
     {
       perror("write");
