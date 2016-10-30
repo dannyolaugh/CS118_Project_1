@@ -1,5 +1,3 @@
-#include "helper.h"
-
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -13,6 +11,9 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+
+#include "helper.h"
+
 using namespace std;
 
 int main(int argc, char *argv[])
@@ -25,8 +26,8 @@ int main(int argc, char *argv[])
   for (int i = 1; i < argc; i++) {
 
     string url = argv[i];
-    HttpRequest request = HttpRequest(url);
-
+    HttpRequest request;
+    request.parseUrl(url);
     // get hostname, port, and IP from url
     string hostname = request.getHost();
     string portNum = request.getPort();
@@ -97,24 +98,24 @@ int main(int argc, char *argv[])
       }
     }
 
-    HttpResponse * response = new HttpResponse;
-    response->decode(recv_string);
+    HttpResponse response;
+    response.decode(recv_string);
 
-    if (response->getStatus() == "404 NOT FOUND") {
+    if (response.getStatus() == "404 NOT FOUND") {
       cerr << "File requested not found.";
       close(sockfd);
       continue;
     }
-    else if (response->getStatus() == "400 BAD REQUEST") {
+    else if (response.getStatus() == "400 BAD REQUEST") {
       cerr << "Server unabled to understand request.";
       close(sockfd);
       continue;
     }
-    else if (response->getStatus() == "200 OK") {
+    else if (response.getStatus() == "200 OK") {
       ofstream outf;
       outf.open(file_name);
       if (outf.is_open()) {
-        outf << response->getBody();
+        outf << response.getBody();
       }
       outf.close();
     }
