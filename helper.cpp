@@ -11,6 +11,8 @@
 
 #include "helper.h"
 
+using namespace std;
+
 void HttpRequest::parseUrl(string url)
 {
   method = "GET";
@@ -24,9 +26,9 @@ void HttpRequest::parseUrl(string url)
     {
       if(url[i] == ':')
 	{
-	  host = url.substr(7,i);
+	  host = url.substr(7,i-7);
 	  pos = i;
-	  port = true;
+	  portDef = true;
 	}
       else if(url[i] == '/' && portDef && !fileNameFind)
         {
@@ -36,7 +38,7 @@ void HttpRequest::parseUrl(string url)
         }
       else if(url[i] == '/' && !portDef && !fileNameFind)
 	{
-	  host = url.substr(7,i);
+	  host = url.substr(7,i-7);
 	  path = url.substr(i, url.length()-1);
 	  fileNameFind = true;
 	}
@@ -45,7 +47,7 @@ void HttpRequest::parseUrl(string url)
 	  pos = i;
 	}
     }
-  fileName = url.substr(pos, url.length()-1);
+  fileName = url.substr(pos + 1, url.length()-1);
 }
 
 
@@ -130,7 +132,7 @@ void HttpRequest::decode(string message)
 	}
       else if(message[i] == ' ' && count == 1)
 	{
-	  path = message.substr();
+	  path = message.substr(pos+1 , i);
 	  count++;
 	  pos = i;
 	}
@@ -211,34 +213,14 @@ void HttpResponse::decode(string message)
   bool statusFound = false;
   bool conLen = false;
   int pos = 0;
-  for(unsigned int i = 0; i < message.length(); i++)
-    {
-      if(message[i] == ' ')
-        {
-          version = message.substr(0,i);
-          pos = i;
-        }
-      else if (message[i] == '\r' && !statusFound)
-        {
-          status = message.substr(pos, i);
-          pos = i;
-	  statusFound = true;
-	}
-      else if(message[i] == ':')
-	{
-	  if(message.substr(i-14,i) == "Content-Length")
-	    {
-	      pos = i+1;
-	      conLen = true;
-	    }
-	}
-      else if(message[i] == '\r' && conLen && statusFound)
-	{
-	  conLen = false;
-	  bodySize = message.substr(pos, i).size();
-	  body = message.substr(pos,i);
-	}
-    }
+  version = message.substr(0,8);
+  int i = message.find("\r\n");
+  status = message.substr(0,i);
+  message.erase(0,i+2);
+  i = message.find("\r\n\r\n");
+  body = message.substr(i,i);
+
+  cout << body << endl;
 }
 
 
