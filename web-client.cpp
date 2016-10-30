@@ -1,3 +1,5 @@
+#include "helper.hpp"
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -11,8 +13,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-
-#include "helper.cpp"
+using namespace std;
 
 int main(int argc, char *argv[])
 {
@@ -24,21 +25,21 @@ int main(int argc, char *argv[])
   for (int i = 1; i < argc; i++) {
 
     string url = argv[i];
-    HTTPRequest request = HTTPRequest(url);
+    HttpRequest request = HttpRequest(url);
 
     // get hostname, port, and IP from url
     string hostname = request.getHost();
     string portNum = request.getPort();
-    string ip = request.getIP(hostname);
-    file_name = request.getFileName();
+    string ip = getIP(hostname, portNum);
+    string file_name = request.getFileName();
 
     // create a socket using TCP IP
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
     struct sockaddr_in serverAddr;
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(portNum);     // short, network byte order
-    serverAddr.sin_addr.s_addr = inet_addr(ip);
+    serverAddr.sin_port = htons(atoi(portNum.c_str()));     // short, network byte order
+    serverAddr.sin_addr.s_addr = inet_addr(ip.c_str());
     memset(serverAddr.sin_zero, '\0', sizeof(serverAddr.sin_zero));
 
     // connect to the server
@@ -72,7 +73,7 @@ int main(int argc, char *argv[])
     string request_string = request.encode();
     if (write(sockfd, request_string.c_str(), request_string.size()) == -1) {
       perror("write");
-      return 4
+      return 4;
 	}
 
     std::string input;
@@ -96,24 +97,24 @@ int main(int argc, char *argv[])
       }
     }
 
-    HTTPResponse response;
-    response.decode(recv_string);
+    HttpResponse * response = new HttpResponse;
+    response->decode(recv_string);
 
-    if (response.getStatus() == "404 NOT FOUND") {
+    if (response->getStatus() == "404 NOT FOUND") {
       cerr << "File requested not found.";
       close(sockfd);
       continue;
     }
-    else if (response.getStatus() == "400 BAD REQUEST") {
+    else if (response->getStatus() == "400 BAD REQUEST") {
       cerr << "Server unabled to understand request.";
       close(sockfd);
       continue;
     }
-    else if (response.getStatus() == "200 OK") {
+    else if (response->getStatus() == "200 OK") {
       ofstream outf;
       outf.open(file_name);
       if (outf.is_open()) {
-        outf << response.getBody();
+        outf << response->getBody();
       }
       outf.close();
     }

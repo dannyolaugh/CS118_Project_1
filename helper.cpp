@@ -1,5 +1,16 @@
-#include "helper.h"
-#include <string>
+#include "helper.hpp"
+
+HttpRequest::HttpRequest()
+{
+  string method = "";
+  string version = "";
+  string port = "";
+  string path = "";
+  string message = "";
+  string host = "";
+  string fileName = "";
+}
+
 HttpRequest::HttpRequest(string url)
 {
   method = "GET";
@@ -11,30 +22,30 @@ HttpRequest::HttpRequest(string url)
   bool fileNameFind = false;
   for(int i = 7; i < url.length(); i++)
     {
-      if(strcmp(url[i],":"))
+      if(url[i] == ':')
 	{
 	  host = url.substr(7,i);
 	  pos = i;
 	  port = true;
 	}
-      else if(url[i] == "/" && portDef && !fileNameFind)
+      else if(url[i] == '/' && portDef && !fileNameFind)
         {
 	  port = url.substr(pos, i);
 	  path = url.substr(i, url.length()-1);
 	  fileNameFind = true;
         }
-      else if(url[i] == "/" && !portDef && !fileNameFind)
+      else if(url[i] == '/' && !portDef && !fileNameFind)
 	{
 	  host = url.substr(7,i);
 	  path = url.substr(i, url.length()-1);
 	  fileNameFind = true;
 	}
-      if(url[i] == "/")
+      if(url[i] == '/')
 	{
 	  pos = i;
 	}
     }
-  fileName = url.substr(i, url.length()-1);
+  fileName = url.substr(pos, url.length()-1);
 }
 
 
@@ -43,7 +54,7 @@ void HttpRequest::setMethod(string m)
   method = m;
 }
 
-string HttpRequest::getMethod();
+string HttpRequest::getMethod()
 {
   return method;
 }
@@ -53,7 +64,7 @@ void HttpRequest::setVersion(string v)
   version = v;
 }
 
-string HttpRequest::getVersion();
+string HttpRequest::getVersion()
 {
   return version;
 }
@@ -63,9 +74,9 @@ void HttpRequest::setPath(string p)
   path = p;
 }
 
-string HttpResquest::getPath();
+string HttpRequest::getPath()
 {
-  return p;
+  return path;
 }
 
 void HttpRequest::setPort(string p)
@@ -73,12 +84,12 @@ void HttpRequest::setPort(string p)
   port = p;
 }
 
-string HttpRequest::getPort();
+string HttpRequest::getPort()
 {
   return port;
 }
 
-string HttpRequest::setHost(string h)
+void HttpRequest::setHost(string h)
 {
   host = h;
 }
@@ -136,6 +147,14 @@ void HttpRequest::decode(string message)
 /*///////////BREAK////////////////*/
 /*////////////////////////////////*/
 
+HttpResponse::HttpResponse()
+{
+  string version = "";
+  string status = "";
+  string body= "";
+  string message = "";
+  int bodySize = 0;
+}
 
 HttpResponse::HttpResponse(string s, string b)
 {
