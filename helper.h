@@ -63,7 +63,7 @@ private:
 
 
 
-HttpRequest::HttpRequest(string url)
+void parseUrl(string url)
 {
   method = "GET";
   version = "HTTP/1.0";
@@ -199,16 +199,9 @@ void HttpRequest::decode(string message)
 /*///////////BREAK////////////////*/
 /*////////////////////////////////*/
 
-HttpResponse::HttpResponse()
-{
-  string version = "";
-  string status = "";
-  string body= "";
-  string message = "";
-  int bodySize = 0;
-}
 
-HttpResponse::HttpResponse(string s, string b)
+
+
 {
   version = "HTTP/1.0";
   status = s;
