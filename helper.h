@@ -9,7 +9,7 @@ class HttpRequest
 {
 public:
   void parseUrl(string url);
-   
+  bool isValid();   
   void setMethod(string m);
   string getMethod();
   void setVersion(string v);

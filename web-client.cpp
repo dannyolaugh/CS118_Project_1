@@ -34,7 +34,6 @@ int main(int argc, char *argv[])
       string ip = getIP(hostname, portNum);
       string file_name = request.getFileName();
       
-
       // create a socket using TCP IP
       int sockfd = socket(AF_INET, SOCK_STREAM, 0);
       

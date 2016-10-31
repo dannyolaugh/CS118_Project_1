@@ -32,7 +32,7 @@ void HttpRequest::parseUrl(string url)
 	}
       else if(url[i] == '/' && portDef && !fileNameFind)
         {
-	  port = url.substr(pos, i);
+	  port = url.substr(pos+1, i-pos-1);
 	  path = url.substr(i, url.length()-1);
 	  fileNameFind = true;
         }
@@ -145,6 +145,13 @@ void HttpRequest::decode(string message)
     }
 }
 
+bool HttpRequest::isValid()
+{
+  if(method != "GET" || version == ""||path == "/")
+    return false;
+  return true;
+}
+
 /*////////////////////////////////*/
 /*///////////BREAK////////////////*/
 /*////////////////////////////////*/
@@ -215,7 +222,7 @@ void HttpResponse::decode(string message)
   status = message.substr(9, i-9);
   message.erase(0,i+2);
   i = message.find("\r\n\r\n");
-  body = message.substr(i,message.length()-i);
+  body = message.substr(i+3,message.length()-i-3);
 }
 
 
