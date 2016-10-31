@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
       char buf[1024] = {0};
       string recv_string;
       int recv_count;
-      
+      //recieve response
       while (true) {
 	
 	memset(buf, '\0', sizeof(buf));
@@ -85,10 +85,12 @@ int main(int argc, char *argv[])
 	  recv_string.append(buf, recv_count);
 	}
       }
-
+      
+      //decode response  
       HttpResponse response;
       response.decode(recv_string);
 
+      //parse response
       if (response.getStatus() == "404 NOT FOUND") {
 	cerr << "File requested not found.";
 	close(sockfd);

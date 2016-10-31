@@ -31,6 +31,8 @@ int resolveRequest( int clientSockfd)
   string past;
   while (!isEnd)
     {
+      //recieve request
+      //wait for it all to come
       memset(buf, '\0', sizeof(buf));
       while (recv(clientSockfd, buf, 1024, 0) == -1)
         {
@@ -38,15 +40,18 @@ int resolveRequest( int clientSockfd)
           sleep(1);
           if(timer >= timeout)
             {
-	      close(clientSockfd); //close connection
+	      //close connection
+	      close(clientSockfd); 
             }
         }
 
       ss << buf << endl;
-
+      
+      //append string
       string tmp = past + ss.str();
       content += ss.str();
-
+      
+      //check for end of message
       if(tmp.find("\r\n\r\n") == string::npos)
         {
           past = ss.str();
@@ -58,9 +63,11 @@ int resolveRequest( int clientSockfd)
           isEnd= true;
         }
     }
-
+  
+  //decode request
   message_content.decode(content);
   HttpResponse response;
+  //check if valid request
   if(!message_content.isValid())
     {
       response.setStatus("400 BAD REQUEST");
@@ -78,6 +85,7 @@ int resolveRequest( int clientSockfd)
   ifstream myReadFile;
   string fileName;
 
+  //formulate path to file
   if(dir == ".")
     {
       fileName = message_content.getPath();
@@ -88,14 +96,15 @@ int resolveRequest( int clientSockfd)
       fileName = dir + "/" + message_content.getPath();
     }
  
+  //read file
   myReadFile.open(fileName, ios::binary);
   if(myReadFile.is_open())
     {
-      // file successfully found 
       response.setStatus("200 OK");
       string tmp;
       unsigned char i;
-
+      
+      //read file if found
       while(1) {
         myReadFile.read((char *)&i, sizeof(i));
         if(myReadFile.eof()) 
@@ -108,10 +117,11 @@ int resolveRequest( int clientSockfd)
     }
   else if(myReadFile.fail())
     {
+      //file not found
       response.setStatus("404 NOT FOUND");
       response.setBodySize(0);
     }
-
+  //make response message
   response.setResponse(response.getStatus(),response.getBody());
   string r = response.encode();
 
@@ -121,7 +131,6 @@ int resolveRequest( int clientSockfd)
       return 4;
     }
 
-  //send the response to the client  
   close(clientSockfd);
   return 0;
 }

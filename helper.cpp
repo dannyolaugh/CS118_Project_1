@@ -15,6 +15,7 @@ using namespace std;
 
 void HttpRequest::parseUrl(string url)
 {
+  //make request message based off URl
   method = "GET";
   version = "HTTP/1.0";
   port = "80";
@@ -113,6 +114,7 @@ string HttpRequest::getFileName()
 
 string HttpRequest::encode()
 {
+  //encode the message
   message = method + " " + path + " " + version + "\r\n" 
     + "Host: " + host + ":" + port + "\r\n\r\n";
   return message;
@@ -120,6 +122,7 @@ string HttpRequest::encode()
 
 void HttpRequest::decode(string message)
 {
+  //decode an Http Request
   int count = 0;
   int pos = 0;
   for(unsigned int i = 0; i < message.length(); i++)
@@ -147,7 +150,8 @@ void HttpRequest::decode(string message)
 
 bool HttpRequest::isValid()
 {
-  if(method != "GET" || version == ""||path == "/")
+  //check if valid request
+  if(method != "GET" || version == "")
     return false;
   return true;
 }
@@ -217,6 +221,7 @@ string HttpResponse::encode()
 
 void HttpResponse::decode(string message)
 {
+  //decode response message
   version = message.substr(0,8);
   int i = message.find("\r\n");
   status = message.substr(9, i-9);
@@ -228,6 +233,7 @@ void HttpResponse::decode(string message)
 
 string getIP(string hostname, string portNum)
 {
+  //get the ip address
   struct addrinfo hints;
   struct addrinfo* res;
 
