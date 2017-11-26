@@ -121,7 +121,7 @@ int resolveRequest( int clientSockfd)
       response.setStatus("404 NOT FOUND");
       response.setBodySize(0);
     }
-  //make response message
+  //make a response message
   response.setResponse(response.getStatus(),response.getBody());
   string r = response.encode();
 
