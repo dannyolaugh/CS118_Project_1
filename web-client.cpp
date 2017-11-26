@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
       string ip = getIP(hostname, portNum);
       string file_name = request.getFileName();
       
-      // create a socket using TCP IP
+      // now create a socket using TCP IP
       int sockfd = socket(AF_INET, SOCK_STREAM, 0);
       
       struct sockaddr_in serverAddr;
@@ -55,7 +55,6 @@ int main(int argc, char *argv[])
 	perror("getsockname");
 	return 3;
       }
-      
       
       // send/receive data to/from connection
       string request_string = request.encode();
