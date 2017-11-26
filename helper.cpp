@@ -156,10 +156,6 @@ bool HttpRequest::isValid()
   return true;
 }
 
-/*////////////////////////////////*/
-/*///////////BREAK////////////////*/
-/*////////////////////////////////*/
-
 void HttpResponse::setResponse(string s, string b)
 {
   version = "HTTP/1.0";
